@@ -25,6 +25,18 @@ func index(c *gin.Context) {
 func healthz(authDB AuthDB) func(*gin.Context) {
 	return func(c *gin.Context) {
 		if err := authDB.Ping(); nil != err {
+			c.JSON(500, gin.H{
+				"message": err.Error(),
+			})
+			return
 		}
+		c.JSON(200, gin.H{
+			"message": fmt.Sprintf("OK: %s", time.Now().Format(time.RFC850)),
+		})
+	}
+}
+
+func authenticate(authDB AuthDB) func(*gin.Context) {
+	return func(c *gin.Context) {
 	}
 }

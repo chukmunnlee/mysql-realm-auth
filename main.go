@@ -31,6 +31,7 @@ func main() {
 	}))
 
 	api.GET("/healthz", healthz(authDB))
+	api.POST("/authenticate", authenticate(authDB))
 
 	log.Println(fmt.Sprintf("Starting server on port %s", opts.Port))
 
