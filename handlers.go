@@ -22,8 +22,9 @@ const (
 )
 
 func index(c *gin.Context) {
-	msg := fmt.Sprintf("<h1>The current time is %s</h1>", time.Now().Format(time.RFC850))
-	c.Data(http.StatusOK, HTML, []byte(msg))
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("The current time is %s", time.Now().Format(time.RFC850)),
+	})
 }
 
 func healthz(authDB AuthDB) func(*gin.Context) {
