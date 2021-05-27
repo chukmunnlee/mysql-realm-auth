@@ -6,10 +6,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const (
-	FIND_USER_WITH_PASSWORD = "select count(*) as valid from users where username = ? and password = sha1(?)"
-)
-
 type AuthDB interface {
 	Open() error
 	Close() error
@@ -18,12 +14,13 @@ type AuthDB interface {
 }
 
 type AuthDBImpl struct {
-	DSN string
-	DB  *sql.DB
+	DSN   string
+	query string
+	DB    *sql.DB
 }
 
-func AuthDatabase(dsn string) AuthDB {
-	return &AuthDBImpl{DSN: dsn}
+func AuthDatabase(dsn string, query string) AuthDB {
+	return &AuthDBImpl{DSN: dsn, query: query}
 }
 
 func (auth *AuthDBImpl) Open() error {
@@ -40,7 +37,8 @@ func (auth *AuthDBImpl) Close() error {
 }
 
 func (auth *AuthDBImpl) Validate(username string, password string) (bool, error) {
-	result, err := auth.DB.Query(FIND_USER_WITH_PASSWORD, username, password)
+	//result, err := auth.DB.Query(FIND_USER_WITH_PASSWORD, username, password)
+	result, err := auth.DB.Query(auth.query, username, password)
 	if nil != err {
 		return false, err
 	}

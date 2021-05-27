@@ -13,13 +13,11 @@ import (
 
 func main() {
 
-	//startedOn := time.Now()
-
 	opts := ParseOptions()
 	opts.Validate()
 
 	// Connect to database
-	authDB := AuthDatabase(opts.DSN)
+	authDB := AuthDatabase(opts.DSN, opts.Query)
 	if err := authDB.Open(); nil != err {
 		log.Panicf("Error. Cannot connect to database. \t%s\n", err.Error())
 	}

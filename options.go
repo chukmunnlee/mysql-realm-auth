@@ -11,6 +11,7 @@ const (
 	DEFAULT_AUTH_TOKEN_HEADER = "X-Auth-Token"
 	DEFAULT_ISSUER            = "mysql-realm-auth"
 	DEFAULT_AUDIENCE          = "application"
+	DEFAULT_QUERY             = "select count(*) as valid from users where username = ? and password = sha1(?)"
 )
 
 type Options struct {
@@ -22,6 +23,7 @@ type Options struct {
 	SignKey     string
 	Issuer      string
 	Audience    string
+	Query       string
 }
 
 func ParseOptions() *Options {
@@ -34,6 +36,7 @@ func ParseOptions() *Options {
 	var signKey string
 	var issuer string
 	var audience string
+	var query string
 
 	flag.StringVar(&port, "port", DEFAULT_PORT, "port number")
 	flag.StringVar(&dsn, "dsn", DEFAULT_DSN, "connection string for MySQL")
@@ -41,6 +44,7 @@ func ParseOptions() *Options {
 	flag.StringVar(&issuer, "issuer", DEFAULT_ISSUER, "token issuer")
 	flag.StringVar(&audience, "audience", DEFAULT_AUDIENCE, "token audience")
 	flag.StringVar(&signKey, "signKey", "", "token signing key")
+	flag.StringVar(&query, "query", DEFAULT_QUERY, "query to validate user")
 	flag.BoolVar(&cors, "cors", true, "enable cors")
 	flag.BoolVar(&logger, "log", true, "enable logging")
 
@@ -52,7 +56,10 @@ func ParseOptions() *Options {
 		Logger:      logger,
 		DSN:         dsn,
 		TokenHeader: tokenHeader,
+		Audience:    audience,
+		Issuer:      issuer,
 		SignKey:     signKey,
+		Query:       query,
 	}
 }
 
@@ -67,4 +74,5 @@ func (o *Options) Validate() {
 		log.Println("WARNING: Using default DSN")
 	}
 
+	log.Printf("Query: %s\n", o.Query)
 }
