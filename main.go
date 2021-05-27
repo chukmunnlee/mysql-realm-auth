@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -32,6 +35,17 @@ func main() {
 
 	api.GET("/healthz", healthz(authDB))
 	api.POST("/authenticate", authenticate(authDB))
+
+	// Setup signal
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		sig := <-interrupt
+		log.Printf("Caught %v. Exiting", sig)
+		authDB.Close()
+		os.Exit(0)
+	}()
 
 	log.Println(fmt.Sprintf("Starting server on port %s", opts.Port))
 
