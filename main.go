@@ -34,7 +34,7 @@ func main() {
 	}))
 
 	api.GET("/healthz", healthz(authDB))
-	api.POST("/authenticate", authenticate(authDB))
+	api.POST("/authenticate", authenticate(authDB, opts))
 
 	// Setup signal
 	interrupt := make(chan os.Signal, 1)

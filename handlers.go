@@ -41,7 +41,7 @@ func healthz(authDB AuthDB) func(*gin.Context) {
 	}
 }
 
-func authenticate(authDB AuthDB) func(*gin.Context) {
+func authenticate(authDB AuthDB, opts *Options) func(*gin.Context) {
 	return func(c *gin.Context) {
 		var user User
 
@@ -67,12 +67,34 @@ func authenticate(authDB AuthDB) func(*gin.Context) {
 			return
 		}
 
-		log.Printf("username: %s, password: %s\n", user.Username, user.Password)
+		result, err := authDB.Validate(user.Username, user.Password)
+		if nil != err {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 
-		//result, err := authDB.Validate("abc", "xyz")
+		if !result {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Incorrect username or password",
+			})
+			return
+		}
+
+		claims := CreateClaim(user.Username, opts.Issuer, opts.Audience)
+		token, err := GenerateJWT(claims, opts.SignKey)
+		if nil != err {
+			log.Printf("GenerateJWT error: %s, %s", user.Username, err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Server error",
+			})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"user": user,
+			"issuedAt": time.Unix(claims.IssuedAt, 0),
+			"token":    token,
 		})
 	}
 }
